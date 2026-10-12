@@ -1,0 +1,44 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="LO_X1iVExDc0DmZv4DaB">
+    <mxGraphModel dx="774" dy="516" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="B7d71PMjEy3efkCuoK8z-8" edge="1" parent="1" source="B7d71PMjEy3efkCuoK8z-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="B7d71PMjEy3efkCuoK8z-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-1" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;" value="Mulai" vertex="1">
+          <mxGeometry height="60" width="100" x="350" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-10" edge="1" parent="1" source="B7d71PMjEy3efkCuoK8z-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="B7d71PMjEy3efkCuoK8z-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" value="Inisialisasi variabel" vertex="1">
+          <mxGeometry height="100" width="100" x="350" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-12" edge="1" parent="1" source="B7d71PMjEy3efkCuoK8z-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="B7d71PMjEy3efkCuoK8z-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-9" parent="1" style="shape=parallelogram;html=1;strokeWidth=2;perimeter=parallelogramPerimeter;whiteSpace=wrap;rounded=1;arcSize=12;size=0.23;" value="Input nama pelanggan" vertex="1">
+          <mxGeometry height="60" width="120" x="340" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-13" edge="1" parent="1" source="B7d71PMjEy3efkCuoK8z-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="B7d71PMjEy3efkCuoK8z-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="250" y="480" />
+              <mxPoint x="250" y="339.6" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-14" connectable="0" parent="B7d71PMjEy3efkCuoK8z-13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="-0.7077" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="B7d71PMjEy3efkCuoK8z-11" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;" value="Nama valid?" vertex="1">
+          <mxGeometry height="100" width="100" x="350" y="430" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
