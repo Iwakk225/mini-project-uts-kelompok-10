@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    char nama[MAKS][25];
+    char nama[MAKS][225];
     char correct_nama;
     char ulang;
     int nomor[MAKS];
@@ -28,7 +28,7 @@ int main(void)
             correct_nama = 'y';
 
             printf("\nMasukkan nama pelanggan : ");
-            scanf(" %24[^\n]", nama[jumlah]);
+            scanf(" %50[^\n]", nama[jumlah]);
 
             /* >>> MAHASISWA 3 <<< : buang sisa input supaya getchar() nanti tidak kelewat */
             while ((c = getchar()) != '\n' && c != EOF) {
@@ -138,4 +138,3 @@ int main(void)
     printf("\nTerima kasih telah menggunakan layanan kami!\n");
     return 0;
 }
-
