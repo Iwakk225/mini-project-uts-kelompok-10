@@ -17,7 +17,7 @@ int main(void)
         do {
             correct_nama = 'y';
 
-            printf("\nMasukkan nama pelanggan : ");
+            printf("\nMasukkan nama pelanggan = ");
             scanf(" %[^\n]", nama);
 
             panjang = strlen(nama);
