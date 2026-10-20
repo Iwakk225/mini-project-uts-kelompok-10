@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAKS 100
+#define MAKS 5 // jika maksimal hanya 5 pelanggan
 
 int main(void)
 {
@@ -20,7 +20,6 @@ int main(void)
     printf("       SISTEM ANTREAN PELAYANAN\n");
     printf("=============================================\n");
 
-    /* ================= MAHASISWA 1: PENDAFTARAN & INPUT ================= */
     printf("\n=== PENDAFTARAN ANTREAN PELANGGAN ===\n");
 
     do {
@@ -28,9 +27,8 @@ int main(void)
             correct_nama = 'y';
 
             printf("\nMasukkan nama pelanggan : ");
-            scanf(" %50[^\n]", nama[jumlah]);
+            scanf(" %224[^\n]", nama[jumlah]);
 
-            /* >>> MAHASISWA 3 <<< : buang sisa input supaya getchar() nanti tidak kelewat */
             while ((c = getchar()) != '\n' && c != EOF) {
             }
 
@@ -59,7 +57,6 @@ int main(void)
         printf("Nomor antrean pelanggan   : A%03d\n\n", nomor[jumlah - 1]);
         printf("---------------------------------------------\n");
 
-        /* >>> MAHASISWA 3 <<< : cegah array penuh */
         if (jumlah == MAKS) {
             printf("Kapasitas antrean penuh (%d).\n", MAKS);
             break;
@@ -68,17 +65,14 @@ int main(void)
         printf("Apakah anda ingin mendaftar lagi? (y/n) : ");
         scanf(" %c", &ulang);
 
-        /* >>> MAHASISWA 3 <<< : buang sisa input */
         while ((c = getchar()) != '\n' && c != EOF) {
         }
 
-    } while (ulang == 'y' || ulang == 'Y');
+    } while (ulang == 'y' || ulang == 'Y'); 
 
-    /* ================= MAHASISWA 2: PROSES ANTREAN ================= */
     printf("\n\n--- PROSES ANTREAN PELAYANAN ---\n");
     printf("Jumlah pelanggan dalam antrean : %d\n", jumlah);
 
-    /* >>> MAHASISWA 3 <<< : tampilkan antrean aktif sebelum mulai */
     printf("\n[ANTREAN AKTIF] Menunggu : %d orang\n", jumlah);
     for (j = 0; j < jumlah; j++) {
         printf("   %d. A%03d - %s\n", j + 1, nomor[j], nama[j]);
@@ -92,7 +86,6 @@ int main(void)
     {
         printf("\n=============================================\n");
 
-        /* >>> MAHASISWA 3 <<< : tampilkan pelanggan yang sedang dilayani */
         printf("[SEDANG DILAYANI]\n");
         printf("   Nomor : A%03d\n", nomor[i]);
         printf("   Nama  : %s\n", nama[i]);
@@ -103,10 +96,10 @@ int main(void)
 
         printf("   Pelanggan selesai dilayani!\n");
 
-        /* >>> MAHASISWA 3 <<< : tampilkan jumlah yang sudah dilayani */
+
         printf("\n[STATISTIK] Telah dilayani : %d dari %d pelanggan\n", dilayani, jumlah);
 
-        /* >>> MAHASISWA 3 <<< : tampilkan antrean aktif (sisa yang menunggu) */
+
         printf("\n[ANTREAN AKTIF] Menunggu : %d orang\n", jumlah - i);
         if (i >= jumlah) {
             printf("   (tidak ada antrean)\n");
@@ -123,7 +116,7 @@ int main(void)
         }
     }
 
-    /* ================= MAHASISWA 3: RINGKASAN AKHIR ================= */
+
     printf("\n\n=============== RINGKASAN ===============\n");
     printf("Jumlah seluruh pelanggan   : %d\n", jumlah);
     printf("Jumlah yang telah dilayani : %d\n", dilayani);
