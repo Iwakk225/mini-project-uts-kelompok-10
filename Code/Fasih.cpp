@@ -1,18 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAKS 100
+#define MAKS 5 // jika maksimal hanya 5 pelanggan
 
 int main(void)
 {
-    char nama[MAKS][25];
-    char correct_nama;
-    char ulang;
-    int nomor[MAKS];  
-    int jumlah = 0;
-    int dilayani = 0;
-    int i;
-    int panjang;
+    char nama1[225], nama2[225], nama3[225];
+    char nama4[225], nama5[225];
+    char nama[225];
+    char ulang = 'y';
+    int jumlah = 0, dilayani = 0;
+    int i, c, panjang;
+    int valid;
 
     printf("\n=============================================\n");
     printf("       SISTEM ANTREAN PELAYANAN\n");
@@ -20,43 +19,69 @@ int main(void)
 
     printf("\n=== PENDAFTARAN ANTREAN PELANGGAN ===\n");
 
-    do {
+    while (jumlah < MAKS && (ulang == 'y' || ulang == 'Y')) {
+
         do {
-            correct_nama = 'y';
+            valid = 1;
 
             printf("\nMasukkan nama pelanggan : ");
-            scanf(" %[^\n]", nama[jumlah]);
 
-            panjang = strlen(nama[jumlah]);
+            if (scanf(" %224[^\n]", nama) != 1) {
+                printf("Input nama tidak valid.\n");
+                return 1;
+            }
+
+            while ((c = getchar()) != '\n' && c != EOF) {
+            }
+
+            panjang = strlen(nama);
 
             if (panjang < 3) {
                 printf("Nama pelanggan minimal 3 karakter.\n");
-                correct_nama = 'n';
+                valid = 0;
             }
 
             for (i = 0; i < panjang; i++) {
-                if (nama[jumlah][i] >= '0' && nama[jumlah][i] <= '9') {
+                if (nama[i] >= '0' && nama[i] <= '9') {
                     printf("Nama pelanggan tidak boleh mengandung angka.\n");
-                    correct_nama = 'n';
+                    valid = 0;
                     break;
                 }
             }
-        } while (correct_nama == 'n');
 
-        nomor[jumlah] = jumlah + 1;  
+        } while (!valid);
+
+        switch (jumlah) {
+            case 0: strcpy(nama1, nama); break;
+            case 1: strcpy(nama2, nama); break;
+            case 2: strcpy(nama3, nama); break;
+            case 3: strcpy(nama4, nama); break;
+            case 4: strcpy(nama5, nama); break;
+        }
+
         jumlah++;
 
         printf("\n---------------------------------------------\n");
         printf("\t=== BERHASIL TERDAFTAR ===\n");
-        printf("\nNama pelanggan            : %s\n", nama[jumlah - 1]);
-        printf("Nomor antrean pelanggan   : A%03d\n\n", nomor[jumlah - 1]);
+        printf("\nNama pelanggan            : %s\n", nama);
+        printf("Nomor antrean pelanggan   : A%03d\n\n", jumlah);
         printf("---------------------------------------------\n");
 
+        if (jumlah == MAKS) {
+            printf("Kapasitas antrean penuh (%d).\n", MAKS);
+            break;
+        }
+
         printf("Apakah anda ingin mendaftar lagi? (y/n) : ");
-        scanf(" %c", &ulang);
+        if (scanf(" %c", &ulang) != 1) {
+            ulang = 'n';
+        }
 
-    } while (ulang == 'y' || ulang == 'Y');
+        while ((c = getchar()) != '\n' && c != EOF) {
+        }
+    }
 
+    // ===== BAGIAN MAHASISWA 2: PROSES ANTREAN =====
 
     printf("\n\n--- PROSES ANTREAN PELAYANAN ---\n");
     printf("Jumlah pelanggan dalam antrean : %d\n", jumlah);
@@ -64,35 +89,61 @@ int main(void)
     getchar();
 
     i = 0;
-    while (i < jumlah)
-    {
+
+    while (i < jumlah) {
+        switch (i) {
+            case 0: strcpy(nama, nama1); break;
+            case 1: strcpy(nama, nama2); break;
+            case 2: strcpy(nama, nama3); break;
+            case 3: strcpy(nama, nama4); break;
+            case 4: strcpy(nama, nama5); break;
+        }
+
         printf("\n---------------------------------------------\n");
-        printf("Nomor antrean berikutnya : A%03d\n", nomor[i]);
-        printf("Nama pelanggan dilayani  : %s\n", nama[i]);
+        printf("Nomor antrean dilayani   : A%03d\n", i + 1);
+        printf("Nama pelanggan dilayani  : %s\n", nama);
         printf("Sedang diproses...\n");
-        printf("Pelanggan %s selesai dilayani!\n", nama[i]);
-        printf("---------------------------------------------\n");
 
         dilayani++;
         i++;
 
+        printf("Pelanggan selesai dilayani!\n");
+        printf("---------------------------------------------\n");
+
         if (i < jumlah) {
+            switch (i) {
+                case 0: strcpy(nama, nama1); break;
+                case 1: strcpy(nama, nama2); break;
+                case 2: strcpy(nama, nama3); break;
+                case 3: strcpy(nama, nama4); break;
+                case 4: strcpy(nama, nama5); break;
+            }
+            printf("\nNomor berikutnya : A%03d (%s)\n", i + 1, nama);
             printf("Tekan Enter untuk pelanggan berikutnya...\n");
             getchar();
         }
     }
 
- 
     printf("\n\n=============== RINGKASAN ===============\n");
     printf("Jumlah seluruh pelanggan   : %d\n", jumlah);
     printf("Jumlah yang telah dilayani : %d\n", dilayani);
     printf("\nDaftar pelanggan yang telah dilayani:\n");
 
-    for (i = 0; i < dilayani; i++)
-    {
-        printf("%d. A%03d - %s\n", i + 1, nomor[i], nama[i]);  
+    for (i = 0; i < dilayani; i++) {
+        switch (i) {
+            case 0: strcpy(nama, nama1); break;
+            case 1: strcpy(nama, nama2); break;
+            case 2: strcpy(nama, nama3); break;
+            case 3: strcpy(nama, nama4); break;
+            case 4: strcpy(nama, nama5); break;
+        }
+        printf("%d. A%03d - %s\n", i + 1, i + 1, nama);
     }
 
     printf("\nTerima kasih telah menggunakan layanan kami.\n");
+
+    printf("\nTekan Enter untuk keluar...\n");
+    getchar();
+
     return 0;
 }
