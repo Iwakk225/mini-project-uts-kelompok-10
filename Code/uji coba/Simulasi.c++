@@ -7,16 +7,39 @@
 using namespace std;
 
 const string FILE_RIWAYAT = "riwayat_antrean.txt";
+const string FILE_LOG = "log_layanan.txt";
 const string MENUNGGU = "Menunggu";
 const string DILAYANI = "Sedang Dilayani";
 const string SELESAI = "Selesai";
 
-// ==================================================
-// MAHASISWA 1 — Data Pelanggan dan Pendaftaran
-// ==================================================
 const int MAKS_PELANGGAN = 100;
 const int MAKS_ANTREAN = 100;
 
+// Deklarasi awal
+bool punyaAntreanAktif(const string &id);
+void catatLog(int nomor, const string &idPelanggan, const string &status);
+
+// Format nomor: A001
+string formatNomor(int n) {
+    if (n < 10) return "A00" + to_string(n);
+    if (n < 100) return "A0" + to_string(n);
+    return "A" + to_string(n);
+}
+
+// Baca pilihan menu (-1 jika bukan angka)
+int bacaPilihan() {
+    int p;
+    cout << "Pilihan: ";
+    if (!(cin >> p)) {
+        if (cin.eof()) return 0;   // input habis
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return -1;
+    }
+    return p;
+}
+
+// MAHASISWA 1
 struct Pelanggan {
     string id;
     string nama;
@@ -27,7 +50,6 @@ Pelanggan *ptrPelanggan = daftarPelanggan;
 int jumlahPelanggan = 0;
 int urutID = 1;
 
-// Nomor antrean dibuat otomatis saat pelanggan masuk antrean.
 int nomorAntreanBerikutnya = 1;
 
 string buatIDPelanggan() {
@@ -40,16 +62,46 @@ int buatNomorAntrean() {
     return nomorAntreanBerikutnya++;
 }
 
-// Mengembalikan nama pelanggan berdasarkan ID (atau "-" jika tidak ada).
-string cariNamaPelanggan(const string &id) {
+// Cari indeks pelanggan
+int cariIndexPelanggan(const string &id) {
     for (int i = 0; i < jumlahPelanggan; i++) {
         if ((ptrPelanggan + i)->id == id) {
-            return (ptrPelanggan + i)->nama;
+            return i;
         }
     }
-    return "-";
+    return -1;
 }
 
+// Ambil nama pelanggan
+string cariNamaPelanggan(const string &id) {
+    int idx = cariIndexPelanggan(id);
+    if (idx == -1) return "(dihapus)";
+    return (ptrPelanggan + idx)->nama;
+}
+
+// Validasi nama
+bool namaValid(const string &nama) {
+    int panjang = nama.length();
+
+    if (panjang < 3) {
+        cout << "Nama pelanggan minimal 3 karakter.\n";
+        return false;
+    }
+
+    for (int i = 0; i < panjang; i++) {
+        if (nama[i] >= '0' && nama[i] <= '9') {
+            cout << "Nama pelanggan tidak boleh mengandung angka.\n";
+            return false;
+        }
+        if (nama[i] == '|') {
+            cout << "Nama pelanggan tidak boleh mengandung karakter |.\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+// Tambah pelanggan
 void inputPelanggan() {
     if (jumlahPelanggan >= MAKS_PELANGGAN) {
         cout << "Data pelanggan sudah penuh!\n";
@@ -64,10 +116,8 @@ void inputPelanggan() {
     do {
         cout << "Nama         : ";
         getline(cin, nama);
-        if (nama.empty()) {
-            cout << "Nama tidak boleh kosong.\n";
-        }
-    } while (nama.empty());
+        if (!cin) return;
+    } while (!namaValid(nama));
 
     (ptrPelanggan + jumlahPelanggan)->id = buatIDPelanggan();
     (ptrPelanggan + jumlahPelanggan)->nama = nama;
@@ -94,9 +144,89 @@ void tampilPelanggan() {
     cout << "Total pelanggan: " << jumlahPelanggan << "\n";
 }
 
-// ==================================================
-// MAHASISWA 2 — Proses dan Pengelolaan Antrean
-// ==================================================
+// Cari by ID
+void cariPelangganID() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    string id;
+    cout << "Masukkan ID pelanggan (contoh PLG01): ";
+    getline(cin, id);
+
+    int idx = cariIndexPelanggan(id);
+    if (idx == -1) {
+        cout << "Pelanggan tidak ditemukan.\n";
+        return;
+    }
+
+    cout << "\nPelanggan ditemukan.\n";
+    cout << "ID    : " << (ptrPelanggan + idx)->id << "\n";
+    cout << "Nama  : " << (ptrPelanggan + idx)->nama << "\n";
+}
+
+// Ubah nama
+void ubahPelanggan() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    string id;
+    cout << "Masukkan ID pelanggan yang diubah: ";
+    getline(cin, id);
+
+    int idx = cariIndexPelanggan(id);
+    if (idx == -1) {
+        cout << "Pelanggan tidak ditemukan.\n";
+        return;
+    }
+
+    cout << "Nama saat ini : " << (ptrPelanggan + idx)->nama << "\n";
+
+    string namaBaru;
+    do {
+        cout << "Nama baru     : ";
+        getline(cin, namaBaru);
+        if (!cin) return;
+    } while (!namaValid(namaBaru));
+
+    (ptrPelanggan + idx)->nama = namaBaru;
+    cout << "Data pelanggan berhasil diubah.\n";
+}
+
+// Hapus pelanggan
+void hapusPelanggan() {
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    string id;
+    cout << "Masukkan ID pelanggan yang dihapus: ";
+    getline(cin, id);
+
+    int idx = cariIndexPelanggan(id);
+    if (idx == -1) {
+        cout << "Pelanggan tidak ditemukan.\n";
+        return;
+    }
+
+    // Tolak jika masih antre
+    if (punyaAntreanAktif(id)) {
+        cout << "Tidak bisa dihapus: pelanggan masih punya antrean aktif.\n";
+        return;
+    }
+
+    char yakin;
+    cout << "Hapus " << (ptrPelanggan + idx)->nama << "? (y/n): ";
+    cin >> yakin;
+    if (yakin != 'y' && yakin != 'Y') {
+        cout << "Penghapusan dibatalkan.\n";
+        return;
+    }
+
+    // Geser data ke kiri
+    for (int i = idx; i < jumlahPelanggan - 1; i++) {
+        *(ptrPelanggan + i) = *(ptrPelanggan + i + 1);
+    }
+    jumlahPelanggan--;
+    cout << "Pelanggan berhasil dihapus.\n";
+}
+
+// MAHASISWA 2
 struct Antrian {
     int nomor;
     string idPelanggan;
@@ -106,6 +236,27 @@ struct Antrian {
 Antrian daftarAntrean[MAKS_ANTREAN];
 Antrian *ptrAntrean = daftarAntrean;
 int jumlahAntrean = 0;
+
+// Cari indeks antrean
+int cariIndexAntrean(int nomor) {
+    for (int i = 0; i < jumlahAntrean; i++) {
+        if ((ptrAntrean + i)->nomor == nomor) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Cek antrean aktif
+bool punyaAntreanAktif(const string &id) {
+    for (int i = 0; i < jumlahAntrean; i++) {
+        if ((ptrAntrean + i)->idPelanggan == id &&
+            (ptrAntrean + i)->status != SELESAI) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void tambahAntrean() {
     if (jumlahAntrean >= MAKS_ANTREAN) {
@@ -121,30 +272,18 @@ void tambahAntrean() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     string id;
-    cout << "\nMasukkan ID pelanggan: ";
+    cout << "\nMasukkan ID pelanggan (contoh PLG01): ";
     getline(cin, id);
 
-    bool ditemukan = false;
-    for (int i = 0; i < jumlahPelanggan; i++) {
-        if ((ptrPelanggan + i)->id == id) {
-            ditemukan = true;
-            break;
-        }
-    }
-
-    if (!ditemukan) {
+    if (cariIndexPelanggan(id) == -1) {
         cout << "ID pelanggan tidak ditemukan.\n";
         return;
     }
 
-    // Cegah pelanggan yang sama mengantre dua kali sekaligus.
-    for (int i = 0; i < jumlahAntrean; i++) {
-        if ((ptrAntrean + i)->idPelanggan == id &&
-            (ptrAntrean + i)->status != SELESAI) {
-            cout << "Pelanggan tersebut masih punya antrean aktif (nomor "
-                 << (ptrAntrean + i)->nomor << ").\n";
-            return;
-        }
+    // Cegah antre ganda
+    if (punyaAntreanAktif(id)) {
+        cout << "Pelanggan tersebut masih punya antrean aktif.\n";
+        return;
     }
 
     (ptrAntrean + jumlahAntrean)->nomor = buatNomorAntrean();
@@ -152,20 +291,33 @@ void tambahAntrean() {
     (ptrAntrean + jumlahAntrean)->status = MENUNGGU;
 
     cout << "Nomor antrean untuk " << cariNamaPelanggan(id) << ": "
-         << (ptrAntrean + jumlahAntrean)->nomor << "\n";
+         << formatNomor((ptrAntrean + jumlahAntrean)->nomor) << "\n";
 
     jumlahAntrean++;
 }
 
 void panggilAntrean() {
+    // Satu loket saja
+    for (int i = 0; i < jumlahAntrean; i++) {
+        if ((ptrAntrean + i)->status == DILAYANI) {
+            cout << "Antrean " << formatNomor((ptrAntrean + i)->nomor)
+                 << " masih dilayani. Selesaikan dulu sebelum memanggil berikutnya.\n";
+            return;
+        }
+    }
+
     for (int i = 0; i < jumlahAntrean; i++) {
         if ((ptrAntrean + i)->status == MENUNGGU) {
             (ptrAntrean + i)->status = DILAYANI;
 
-            cout << "\nMemanggil antrean nomor " << (ptrAntrean + i)->nomor << "\n";
+            cout << "\nMemanggil antrean nomor "
+                 << formatNomor((ptrAntrean + i)->nomor) << "\n";
             cout << "ID Pelanggan : " << (ptrAntrean + i)->idPelanggan << "\n";
             cout << "Nama         : "
                  << cariNamaPelanggan((ptrAntrean + i)->idPelanggan) << "\n";
+
+            catatLog((ptrAntrean + i)->nomor, (ptrAntrean + i)->idPelanggan,
+                     (ptrAntrean + i)->status);
             return;
         }
     }
@@ -175,7 +327,7 @@ void panggilAntrean() {
 
 void selesaiLayanan() {
     int nomor;
-    cout << "Masukkan nomor antrean yang selesai: ";
+    cout << "Masukkan nomor antrean yang selesai (angka, contoh 3 untuk A003): ";
 
     if (!(cin >> nomor)) {
         cin.clear();
@@ -188,7 +340,10 @@ void selesaiLayanan() {
         if ((ptrAntrean + i)->nomor == nomor &&
             (ptrAntrean + i)->status == DILAYANI) {
             (ptrAntrean + i)->status = SELESAI;
-            cout << "Antrean " << nomor << " selesai dilayani.\n";
+            cout << "Antrean " << formatNomor(nomor) << " selesai dilayani.\n";
+
+            catatLog((ptrAntrean + i)->nomor, (ptrAntrean + i)->idPelanggan,
+                     (ptrAntrean + i)->status);
             return;
         }
     }
@@ -196,9 +351,7 @@ void selesaiLayanan() {
     cout << "Antrean tidak ditemukan atau belum dilayani.\n";
 }
 
-// ==================================================
-// MAHASISWA 3 — Riwayat dan Statistik Antrean
-// ==================================================
+// MAHASISWA 3
 void simpanKeFile() {
     ofstream file(FILE_RIWAYAT);
 
@@ -207,21 +360,25 @@ void simpanKeFile() {
         return;
     }
 
-    // Bagian pelanggan
-    file << jumlahPelanggan << "\n";
-    file << urutID << "\n";
+    // Pelanggan
+    file << "Jumlah Pelanggan|" << jumlahPelanggan << "\n";
+    file << "ID Berikutnya|" << urutID << "\n";
+    file << "ID|Nama\n";
     for (int i = 0; i < jumlahPelanggan; i++) {
-        file << (ptrPelanggan + i)->id << "\n";
-        file << (ptrPelanggan + i)->nama << "\n";
+        file << (ptrPelanggan + i)->id << "|"
+             << (ptrPelanggan + i)->nama << "\n";
     }
 
-    // Bagian antrean
-    file << jumlahAntrean << "\n";
-    file << nomorAntreanBerikutnya << "\n";
+    file << "\n";
+
+    // Antrean
+    file << "Jumlah Antrean|" << jumlahAntrean << "\n";
+    file << "Nomor Berikutnya|" << nomorAntreanBerikutnya << "\n";
+    file << "Nomor|ID Pelanggan|Status\n";
     for (int i = 0; i < jumlahAntrean; i++) {
-        file << (ptrAntrean + i)->nomor << "\n";
-        file << (ptrAntrean + i)->idPelanggan << "\n";
-        file << (ptrAntrean + i)->status << "\n";
+        file << (ptrAntrean + i)->nomor << "|"
+             << (ptrAntrean + i)->idPelanggan << "|"
+             << (ptrAntrean + i)->status << "\n";
     }
 
     file.close();
@@ -236,10 +393,24 @@ void bacaDariFile() {
         return;
     }
 
+    string label;
     int jp, uid, ja, nb;
 
-    file >> jp >> uid;
+    // Bagian pelanggan
+    getline(file, label, '|');
+    if (label != "Jumlah Pelanggan") {
+        cout << "Format file riwayat tidak valid.\n";
+        return;
+    }
+    file >> jp;
     file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    getline(file, label, '|');
+    file >> uid;
+    file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    file.ignore(numeric_limits<streamsize>::max(), '\n');   // baris judul
+
     if (!file || jp < 0 || jp > MAKS_PELANGGAN || uid < 1) {
         cout << "Format file riwayat tidak valid.\n";
         return;
@@ -247,12 +418,27 @@ void bacaDariFile() {
 
     Pelanggan tmpP[MAKS_PELANGGAN];
     for (int i = 0; i < jp; i++) {
-        getline(file, tmpP[i].id);
+        getline(file, tmpP[i].id, '|');
         getline(file, tmpP[i].nama);
     }
 
-    file >> ja >> nb;
+    file.ignore(numeric_limits<streamsize>::max(), '\n');   // baris kosong
+
+    // Bagian antrean
+    getline(file, label, '|');
+    if (label != "Jumlah Antrean") {
+        cout << "Format file riwayat tidak valid.\n";
+        return;
+    }
+    file >> ja;
     file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    getline(file, label, '|');
+    file >> nb;
+    file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    file.ignore(numeric_limits<streamsize>::max(), '\n');   // baris judul
+
     if (!file || ja < 0 || ja > MAKS_ANTREAN || nb < 1) {
         cout << "Format file riwayat tidak valid.\n";
         return;
@@ -261,9 +447,15 @@ void bacaDariFile() {
     Antrian tmpA[MAKS_ANTREAN];
     for (int i = 0; i < ja; i++) {
         file >> tmpA[i].nomor;
-        file.ignore(numeric_limits<streamsize>::max(), '\n');
-        getline(file, tmpA[i].idPelanggan);
+        file.ignore(1);   // lewati tanda |
+        getline(file, tmpA[i].idPelanggan, '|');
         getline(file, tmpA[i].status);
+
+        if (tmpA[i].status != MENUNGGU && tmpA[i].status != DILAYANI &&
+            tmpA[i].status != SELESAI) {
+            cout << "Format file riwayat tidak valid (status salah).\n";
+            return;
+        }
     }
 
     if (!file) {
@@ -271,7 +463,7 @@ void bacaDariFile() {
         return;
     }
 
-    // Data valid seluruhnya, baru dipindahkan ke data program.
+    // Pindahkan ke program
     jumlahPelanggan = jp;
     urutID = uid;
     for (int i = 0; i < jp; i++) *(ptrPelanggan + i) = tmpP[i];
@@ -286,8 +478,23 @@ void bacaDariFile() {
          << jumlahAntrean << " antrean).\n";
 }
 
-void tampilAntreanAktif() {
-    cout << "\n===== ANTREAN AKTIF =====\n";
+// Catat log (fstream)
+void catatLog(int nomor, const string &idPelanggan, const string &status) {
+    fstream log(FILE_LOG.c_str(), ios::out | ios::app);
+
+    if (!log.is_open()) {
+        cout << "(Log layanan gagal dibuka.)\n";
+        return;
+    }
+
+    log << formatNomor(nomor) << " | " << idPelanggan << " | "
+        << cariNamaPelanggan(idPelanggan) << " | " << status << "\n";
+    log.close();
+}
+
+// Tampil antrean (semua = true termasuk yang selesai)
+void tampilAntrean(bool semua) {
+    cout << (semua ? "\n===== SELURUH ANTREAN =====\n" : "\n===== ANTREAN AKTIF =====\n");
     cout << left
          << setw(10) << "Nomor"
          << setw(12) << "ID"
@@ -295,27 +502,27 @@ void tampilAntreanAktif() {
          << "Status\n";
     cout << "------------------------------------------------------\n";
 
-    int aktif = 0;
+    int jumlah = 0;
 
     for (int i = 0; i < jumlahAntrean; i++) {
-        if ((ptrAntrean + i)->status != SELESAI) {
+        if (semua || (ptrAntrean + i)->status != SELESAI) {
             cout << left
-                 << setw(10) << (ptrAntrean + i)->nomor
+                 << setw(10) << formatNomor((ptrAntrean + i)->nomor)
                  << setw(12) << (ptrAntrean + i)->idPelanggan
                  << setw(20) << cariNamaPelanggan((ptrAntrean + i)->idPelanggan)
                  << (ptrAntrean + i)->status << "\n";
-            aktif++;
+            jumlah++;
         }
     }
 
-    if (aktif == 0) {
-        cout << "Tidak ada antrean aktif.\n";
+    if (jumlah == 0) {
+        cout << "Tidak ada antrean.\n";
     }
 }
 
 void cariRiwayat() {
     int nomor;
-    cout << "Masukkan nomor antrean yang dicari: ";
+    cout << "Masukkan nomor antrean yang dicari (angka, contoh 3 untuk A003): ";
 
     if (!(cin >> nomor)) {
         cin.clear();
@@ -324,87 +531,144 @@ void cariRiwayat() {
         return;
     }
 
+    int idx = cariIndexAntrean(nomor);
+    if (idx == -1) {
+        cout << "Riwayat antrean tidak ditemukan.\n";
+        return;
+    }
+
+    cout << "\nRiwayat antrean ditemukan.\n";
+    cout << "Nomor antrean : " << formatNomor((ptrAntrean + idx)->nomor) << "\n";
+    cout << "ID pelanggan  : " << (ptrAntrean + idx)->idPelanggan << "\n";
+    cout << "Nama          : "
+         << cariNamaPelanggan((ptrAntrean + idx)->idPelanggan) << "\n";
+    cout << "Status        : " << (ptrAntrean + idx)->status << "\n";
+}
+
+// Laporan
+void laporan() {
+    int menunggu = 0;
+    int dilayani = 0;
+    int selesai = 0;
+
     for (int i = 0; i < jumlahAntrean; i++) {
-        if ((ptrAntrean + i)->nomor == nomor) {
-            cout << "\nRiwayat antrean ditemukan.\n";
-            cout << "Nomor antrean : " << (ptrAntrean + i)->nomor << "\n";
-            cout << "ID pelanggan  : " << (ptrAntrean + i)->idPelanggan << "\n";
-            cout << "Nama          : "
-                 << cariNamaPelanggan((ptrAntrean + i)->idPelanggan) << "\n";
-            cout << "Status        : " << (ptrAntrean + i)->status << "\n";
-            return;
+        if ((ptrAntrean + i)->status == MENUNGGU) {
+            menunggu++;
+        } else if ((ptrAntrean + i)->status == DILAYANI) {
+            dilayani++;
+        } else {
+            selesai++;
         }
     }
 
-    cout << "Riwayat antrean tidak ditemukan.\n";
-}
+    cout << "\n========== LAPORAN ANTREAN ==========\n";
+    cout << "Jumlah pelanggan terdaftar    : " << jumlahPelanggan << "\n";
+    cout << "Jumlah seluruh antrean        : " << jumlahAntrean << "\n";
+    cout << "Menunggu                      : " << menunggu << "\n";
+    cout << "Sedang dilayani               : " << dilayani << "\n";
+    cout << "Pelanggan yang telah dilayani : " << selesai << "\n";
 
-void laporanPelangganDilayani() {
-    int jumlahDilayani = 0;
-
+    cout << "\nDaftar pelanggan yang telah dilayani:\n";
+    int no = 1;
     for (int i = 0; i < jumlahAntrean; i++) {
         if ((ptrAntrean + i)->status == SELESAI) {
-            jumlahDilayani++;
+            cout << no << ". " << formatNomor((ptrAntrean + i)->nomor) << " - "
+                 << cariNamaPelanggan((ptrAntrean + i)->idPelanggan) << "\n";
+            no++;
         }
     }
-
-    cout << "\nJumlah pelanggan yang telah dilayani: "
-         << jumlahDilayani << "\n";
+    if (no == 1) {
+        cout << "(belum ada)\n";
+    }
 }
 
-// ==================================================
-// MENU UTAMA
-// ==================================================
+// MENU
+void menuTampil() {
+    cout << "\n--- Tampilkan Data ---\n";
+    cout << "1. Data pelanggan\n";
+    cout << "2. Seluruh data antrean\n";
+    cout << "3. Antrean aktif\n";
+    cout << "0. Kembali\n";
+
+    switch (bacaPilihan()) {
+        case 1: tampilPelanggan(); break;
+        case 2: tampilAntrean(true); break;
+        case 3: tampilAntrean(false); break;
+        case 0: break;
+        default: cout << "Pilihan tidak valid.\n";
+    }
+}
+
+void menuCari() {
+    cout << "\n--- Cari Data ---\n";
+    cout << "1. Pelanggan berdasarkan ID\n";
+    cout << "2. Antrean berdasarkan nomor\n";
+    cout << "0. Kembali\n";
+
+    switch (bacaPilihan()) {
+        case 1: cariPelangganID(); break;
+        case 2: cariRiwayat(); break;
+        case 0: break;
+        default: cout << "Pilihan tidak valid.\n";
+    }
+}
+
+void menuTransaksi() {
+    cout << "\n--- Proses Transaksi Antrean ---\n";
+    cout << "1. Tambah antrean\n";
+    cout << "2. Panggil antrean berikutnya\n";
+    cout << "3. Selesaikan pelayanan\n";
+    cout << "0. Kembali\n";
+
+    switch (bacaPilihan()) {
+        case 1: tambahAntrean(); break;
+        case 2: panggilAntrean(); break;
+        case 3: selesaiLayanan(); break;
+        case 0: break;
+        default: cout << "Pilihan tidak valid.\n";
+    }
+}
+
 void menuUtama() {
     cout << "\n===== SISTEM SIMULASI ANTRIAN =====\n";
-    cout << "1.  Daftar pelanggan baru\n";
-    cout << "2.  Tambah antrean\n";
-    cout << "3.  Panggil antrean\n";
-    cout << "4.  Selesaikan pelayanan\n";
-    cout << "5.  Tampilkan antrean aktif\n";
-    cout << "6.  Simpan data ke file\n";
-    cout << "7.  Baca data dari file\n";
-    cout << "8.  Cari riwayat antrean\n";
-    cout << "9.  Laporan pelanggan dilayani\n";
-    cout << "10. Tampilkan data pelanggan\n";
-    cout << "0.  Keluar\n";
-    cout << "Pilihan: ";
+    cout << "1. Tambah Data (daftar pelanggan baru)\n";
+    cout << "2. Tampilkan Data\n";
+    cout << "3. Cari Data\n";
+    cout << "4. Ubah Data\n";
+    cout << "5. Hapus Data\n";
+    cout << "6. Proses Transaksi (tambah / panggil / selesai)\n";
+    cout << "7. Simpan Data\n";
+    cout << "8. Baca Data\n";
+    cout << "9. Laporan\n";
+    cout << "0. Keluar\n";
 }
 
 int main() {
     int pilihan;
 
-    // Membaca data yang tersimpan saat program dijalankan.
+    // Baca data awal
     bacaDariFile();
 
     do {
         menuUtama();
-
-        if (!(cin >> pilihan)) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Masukkan pilihan berupa angka.\n";
-            pilihan = -1;
-            continue;
-        }
+        pilihan = bacaPilihan();
 
         switch (pilihan) {
-            case 1:  inputPelanggan(); break;
-            case 2:  tambahAntrean(); break;
-            case 3:  panggilAntrean(); break;
-            case 4:  selesaiLayanan(); break;
-            case 5:  tampilAntreanAktif(); break;
-            case 6:  simpanKeFile(); break;
-            case 7:  bacaDariFile(); break;
-            case 8:  cariRiwayat(); break;
-            case 9:  laporanPelangganDilayani(); break;
-            case 10: tampilPelanggan(); break;
+            case 1: inputPelanggan(); break;
+            case 2: menuTampil(); break;
+            case 3: menuCari(); break;
+            case 4: ubahPelanggan(); break;
+            case 5: hapusPelanggan(); break;
+            case 6: menuTransaksi(); break;
+            case 7: simpanKeFile(); break;
+            case 8: bacaDariFile(); break;
+            case 9: laporan(); break;
             case 0:
-                simpanKeFile();   // simpan otomatis saat keluar
+                simpanKeFile();   // auto simpan
                 cout << "Program selesai.\n";
                 break;
             default:
-                cout << "Pilihan tidak tersedia.\n";
+                cout << "Pilihan tidak valid.\n";
         }
 
     } while (pilihan != 0);

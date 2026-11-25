@@ -1,1 +1,13 @@
-1|P001|Adit|2
+3
+4
+PLG01
+Aditya
+PLG02
+Naufal
+PLG03
+Haris
+1
+2
+1
+PLG01
+Selesai
